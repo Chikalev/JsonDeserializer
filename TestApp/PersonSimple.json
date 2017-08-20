@@ -1,0 +1,95 @@
+{
+	"_id": "597ef3ed36a83aab11beabd9",
+	"index": 0,
+	"guid": "317e6371-c4c9-4315-9cd0-f74f2aab09df",
+	"isActive": false,
+	"balance": "$2,125.85",
+	"picture": "http://placehold.it/32x32",
+	"age": 35,
+	"eyeColor": "blue",
+	"name": "Pratt Suarez",
+	"gender": "male",
+	"company": "FARMEX",
+	"email": "prattsuarez@farmex.com",
+	"phone": "+1 (863) 406-3148",
+	"address": "351 Tabor Court, Avoca, Maryland, 7477",
+	"about": "Labore ipsum nisi Lorem duis duis fugiat minim anim labore et duis officia. Duis minim cillum amet commodo. Irure aliquip dolor do dolor deserunt aliquip aute excepteur et ut. Cillum proident aliquip adipisicing labore veniam amet fugiat aute nisi ea ut sit reprehenderit sint.\r\n",
+	"registered": "2016-01-09T07:08:29 -03:00",
+	"latitude": -85.193342,
+	"longitude": -146.884532,
+	"tags": ["elit",
+	"eiusmod",
+	"duis",
+	"voluptate",
+	"nulla",
+	"ea",
+	"velit"],
+   "friends_renamed": [
+      {
+         "id": 0,
+         "name": "Ortiz Clements"
+      },
+      {
+         "id": 1,
+         "name": "Moss Acevedo"
+      },
+      {
+         "id": 2,
+         "name": "James Bradford"
+      },
+      {
+         "id": 3,
+         "name": "Nona Padilla"
+      },
+      {
+         "id": 4,
+         "name": "Roseann Hurst"
+      },
+      {
+         "id": 5,
+         "name": "Yang Gentry"
+      }
+   ],
+   "books": [
+      {
+         "ISBN": "978-1-43-024233-8",
+         "Author": "Andrew Troelsen",
+         "Title": "Pro C# and the .NET 4.5 Framework",
+         "Year": 2012,
+         "Publisher": "APress",
+         "Cost": 12.15,
+         "Category": "Book"
+      },
+      {
+         "ISBN": "978-0-321-65870-8",
+         "Author": "Bill Wagner",
+         "Title": "Effective C# : 50 specific ways to improve your C#",
+         "Year": 2010,
+         "Publisher": "Addison-Wesley",
+         "Cost": 9.27,
+         "Category": "Book"
+      }
+   ],
+   "bankcards": [
+      {
+         "CardNumber": "12124545455445",
+         "CardHolder": "Ortiz Clements",
+         "BankName": "WBS",
+         "ValidTo": "2018-02-14T06:06:08 -03:00"
+      },
+      {
+         "CardNumber": "1234567896312",
+         "CardHolder": "Ortiz Clements",
+         "BankName": "American Credit Bank",
+         "ValidTo": "2019-03-01T06:06:08 +05:00"
+      },
+      {
+         "CardNumber": "25036201254515",
+         "CardHolder": "Ortiz Clements",
+         "BankName": "New York City Bank",
+         "ValidTo": "2019-03-01T06:06:08 +05:00"
+      }
+   ],
+	"greeting": "Hello, Pratt Suarez! You have 6 unread messages.",
+	"favoriteFruit": "apple"
+}
