@@ -8,11 +8,8 @@ namespace TestApp
    class LazyDeserializingInterceptor : IInterceptor
    {
       private const string GET_PREFIX = "get_";
-
       private const string DISPOSE_METHOD = "Dispose";
 
-      /*private static readonly MethodInfo ProxyGenericIteratorMethod =
-            typeof(LazyDeserializingInterceptor).GetMethod("ProxyGenericIterator", BindingFlags.NonPublic | BindingFlags.Static);*/
       private static readonly MethodInfo DeserializerGenericIteratorMethod =
             typeof(CollectionDeserializer).GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Instance);
 
@@ -34,7 +31,6 @@ namespace TestApp
          else if (invocation.Method.Name == DISPOSE_METHOD)
             HandleDisposeInvocation();
          else invocation.Proceed();
-         //else throw new Exception($"Unexpected type: {returnType.FullName}; property: {invocation.Method.Name}");
       }
 
       private void HandleGenericIteratorInvocation(IInvocation invocation)
@@ -43,16 +39,13 @@ namespace TestApp
          //invocation.Proceed();
 
          var method = DeserializerGenericIteratorMethod.MakeGenericMethod(invocation.Method.ReturnType.GetGenericArguments()[0]);
-         //var method = ProxyGenericIteratorMethod.MakeGenericMethod(invocation.Method.ReturnType.GetGenericArguments()[0]);
          string propertyName = invocation.Method.Name.Remove(0, GET_PREFIX.Length);
-         invocation.ReturnValue = method.Invoke(_deserializer, new[] { /*invocation.InvocationTarget,*/ propertyName });
-         //invocation.ReturnValue = method.Invoke(null, new[] { /*invocation.InvocationTarget,*/ _deserializer.GetBooks("Books") });
+         invocation.ReturnValue = method.Invoke(_deserializer, new[] { propertyName });
       }
 
       private void HandleDisposeInvocation()
       {
          _fileSplitter.DeleteTempFolder();
-         //invocation.Proceed();
       }
 
       /*private static IEnumerable<T> ProxyGenericIterator<T>(IEnumerable enumerable)

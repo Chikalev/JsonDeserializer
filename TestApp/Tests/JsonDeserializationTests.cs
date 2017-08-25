@@ -8,7 +8,7 @@ using TestApp.Core;
 namespace TestApp.Tests
 {
    [TestFixture(Category = "JsonDeserialization", 
-                Description = "Интеграционные тесты на десериализатор, использующий механизм " +
+                Description = "Функциональные тесты на десериализатор, использующий механизм " +
                               "разбивки исходного json-файла на файлы-коллекции")]
    public class JsonDeserializationTests
    {

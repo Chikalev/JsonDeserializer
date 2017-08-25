@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using ARMD.BLToolKitForSQLExpress;
@@ -11,6 +13,7 @@ using ARMD.DataContracts.ToStations.ReferenceData.TicketExemptions;
 using BLToolkit.Mapping;
 using BLToolkit.Mapping.Fluent;
 using FastMember;
+using Newtonsoft.Json;
 using NLog;
 
 namespace TestApp.DAL
@@ -38,15 +41,27 @@ namespace TestApp.DAL
             //Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
             using (Database db = new Database(ConnectionString))
             {
-                db.BulkInsert(Helper.GetExemptions());
+                //var exemptions = Helper.GetExemptionsFromFile(@"C:\Temp\DataTable.json");
+                var table = SerializerHelper.Deserialize(@"C:\Temp\DataTable2.json");
+                var exemptions = table.ToExemptions();
+                db.BulkInsert(exemptions);
             }
+        }
+
+        public void TestSerializing(string fileName)
+        {
+            var dataTable = GetDataTable();
+            SerializerHelper.Serialize(dataTable, fileName);
+
+            var table = SerializerHelper.Deserialize(fileName);
+            Console.WriteLine("Count: " + table.Rows.Count);
         }
 
         private DataTable GetDataTable()
         {
             var dataTable = new DataTable();
             Helper.SetColumns(dataTable);
-            
+
             using (var reader = ObjectReader.Create(Helper.GetExemptions()))
             {
                 dataTable.Load(reader);
@@ -54,7 +69,7 @@ namespace TestApp.DAL
             return dataTable;
         }
 
-        
+
     }
 
     public class Database : DbManagerBase
@@ -72,11 +87,10 @@ namespace TestApp.DAL
 
         public void BulkInsert<T>(IEnumerable<T> collection)
         {
-            //_logger.Debug(Connection.ConnectionString);
             var bulkCopyOptions = SqlBulkCopyOptions.Default | SqlBulkCopyOptions.CheckConstraints | SqlBulkCopyOptions.TableLock;
             using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Connection, bulkCopyOptions, (SqlTransaction)Transaction))
             {
-                bulkCopy.DestinationTableName = "[dbo].[Exemptions]";
+                bulkCopy.DestinationTableName = "Exemptions";
                 var table = MappingSchema.MapListToDataTable(collection.ToList());
                 foreach (DataColumn column in table.Columns)
                     bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
@@ -86,7 +100,7 @@ namespace TestApp.DAL
         }
     }
 
-    class Helper
+    static class Helper
     {
         public static void SetColumns(DataTable dataTable)
         {
@@ -185,6 +199,102 @@ namespace TestApp.DAL
             };
         }
 
+        public static IEnumerable<Exemption> ToExemptions(this DataTable table)
+        {
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                var row = table.Rows[i];
+                yield return new Exemption
+                {
+                    Code = row.Get<int>("Code"),
+                    ActiveFromDate = row.Get<DateTime>("ActiveFromDate"),
+                    VersionId = row.Get<int>("VersionId"),
+                    ExemptionExpressCode = row.Get<int>("ExemptionExpressCode"),
+                    RegionOkatoCode = row.Get<string>("RegionOkatoCode"),
+                    Name = row.Get<string>("Name"),
+                    ExemptionOrganizationCode = row.Get<string>("ExemptionOrganizationCode"),
+                    ExemptionGroupCode = (int)row.Get<int>("ExemptionGroupCode"),
+                    GVC = (int)row.Get<int>("GVC"),
+                    Percentage = (int)row.Get<int>("Percentage"),
+                    ActiveTillDate = row.Get<DateTime?>("ActiveTillDate"),
+                    ChildTicketAvailable = (bool)row.Get<bool>("ChildTicketAvailable"),
+                    MassRegistryAvailable = (bool)row.Get<bool>("MassRegistryAvailable"),
+                    CppkRegistryBan = (bool)row.Get<bool>("CppkRegistryBan"),
+                    Leavy = (bool)row.Get<bool>("Leavy"),
+                    RequireSnilsNumber = (bool)row.Get<bool>("RequireSnilsNumber"),
+                    RequireSocialCard = row.Get<bool>("RequireSocialCard"),
+                    IsRegionOnly = row.Get<bool>("IsRegionOnly"),
+                    ChangedDateTime = row.Get<DateTime>("ChangedDateTime"),
+                    DataChecksum = row.Get<byte[]>("DataChecksum"),
+                    DeleteInVersionId = row.Get<int?>("DeleteInVersionId"),
+                    NewExemptionExpressCode = row.Get<int?>("NewExemptionExpressCode"),
+                    CanUpgradeCar = row.Get<bool>("CanUpgradeCar"),
+                    ExpressActiveFromDate = row.Get<DateTime?>("ExpressActiveFromDate"),
+                    ExpressActiveTillDate = row.Get<DateTime?>("ExpressActiveTillDate"),
+                    NotRequireDocumentNumber = row.Get<bool>("NotRequireDocumentNumber"),
+                    NotRequireFIO = row.Get<bool>("NotRequireFIO"),
+                    Presale7000WithPlace = row.Get<bool>("Presale7000WithPlace"),
+                    Presale6000Once = row.Get<bool>("Presale6000Once"),
+                    Presale6000Abonement = row.Get<bool>("Presale6000Abonement"),
+                    CanReturnAbonement = row.Get<bool>("CanReturnAbonement")
+                };
+            }
+        }
 
+        public static T Get<T>(this DataRow row, string fieldName)
+        {
+            if (row[fieldName] is DBNull)
+                return default(T);
+            return (T)row[fieldName];
+        }
+
+        public static IEnumerable<Exemption> GetExemptionsFromFile(string fileName)
+        {
+            using (var fileStreamReader = File.OpenText(fileName))
+            {
+                return DeserializeJsonFromReader<Exemption[]>(fileStreamReader);
+            }
+        }
+
+        public static T DeserializeJsonFromReader<T>(TextReader textReader)
+        {
+            using (JsonReader jsonReader = new JsonTextReader(textReader))
+            {
+                var serializer = new JsonSerializer { DateTimeZoneHandling = DateTimeZoneHandling.Unspecified };
+
+                return serializer.Deserialize<T>(jsonReader);
+            }
+        }
+    }
+
+    class SerializerHelper
+    {
+        public static byte[] StrToByteArray(string str)
+        {
+            UTF8Encoding encoding = new UTF8Encoding();
+            return encoding.GetBytes(str);
+        }
+
+        public static string ByteArrayToStr(byte[] barr)
+        {
+            UTF8Encoding encoding = new UTF8Encoding();
+            return encoding.GetString(barr, 0, barr.Length);
+        }
+
+        public static void Serialize(DataTable dt, string fileName)
+        {
+            using (var fileStream = new FileStream(fileName, FileMode.Append, FileAccess.Write))
+            {
+                BinaryFormatter bformatter = new BinaryFormatter();
+                bformatter.Serialize(fileStream, dt);
+            }
+        }
+
+        public static DataTable Deserialize(string fileName)
+        {
+            var fileStream = File.OpenRead(fileName);
+            BinaryFormatter serializer = new BinaryFormatter();
+            return (DataTable)serializer.Deserialize(fileStream);
+        }
     }
 }
